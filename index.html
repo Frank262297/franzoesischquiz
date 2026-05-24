@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Französisch A1+ Quiz im Kahoot-Stil</title>
+  <style>
+    :root {
+      --bg1: #4f46e5;
+      --bg2: #ec4899;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #facc15;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .app {
+      width: min(1000px, 100%);
+      background: rgba(255,255,255,0.96);
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    header {
+      padding: 24px 28px;
+      background: #111827;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: clamp(1.4rem, 3vw, 2.3rem); }
+    .badge {
+      background: var(--yellow);
+      color: #111827;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    main { padding: 28px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .hero { text-align: center; padding: 32px 16px; }
+    .hero h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin: 0 0 12px; }
+    .hero p { color: var(--muted); font-size: 1.15rem; max-width: 680px; margin: 0 auto 24px; line-height: 1.5; }
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 22px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
+    }
+    button:hover { filter: brightness(1.03); transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .primary { background: #111827; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .secondary { background: #e5e7eb; color: #111827; }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .progress-wrap { background: #e5e7eb; border-radius: 999px; height: 18px; overflow: hidden; }
+    .progress { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); transition: width 0.25s; }
+    .stat { background: #f3f4f6; padding: 10px 14px; border-radius: 14px; font-weight: 800; white-space: nowrap; }
+    .question-card {
+      background: white;
+      border-radius: 24px;
+      padding: 26px;
+      box-shadow: inset 0 0 0 2px #f3f4f6;
+    }
+    .type { color: var(--purple); font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85rem; margin-bottom: 10px; }
+    .question { font-size: clamp(1.35rem, 3vw, 2.2rem); font-weight: 900; line-height: 1.25; margin-bottom: 18px; }
+    .hint { color: var(--muted); margin-bottom: 18px; font-size: 1rem; }
+    .answers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .answer {
+      min-height: 90px;
+      color: white;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      line-height: 1.25;
+    }
+    .answer:nth-child(1) { background: var(--red); }
+    .answer:nth-child(2) { background: var(--blue); }
+    .answer:nth-child(3) { background: var(--yellow); color: #111827; }
+    .answer:nth-child(4) { background: var(--green); }
+    .symbol { font-size: 1.4rem; min-width: 32px; }
+    .answer.correct { outline: 6px solid #16a34a; filter: saturate(1.15); }
+    .answer.wrong { outline: 6px solid #991b1b; filter: grayscale(0.35) brightness(0.85); }
+    .answer.dim { opacity: 0.45; }
+    .feedback {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: none;
+    }
+    .feedback.good { display: block; background: #dcfce7; color: #166534; }
+    .feedback.bad { display: block; background: #fee2e2; color: #991b1b; }
+    .next-row { margin-top: 18px; display: flex; justify-content: flex-end; }
+    .final { text-align: center; padding: 34px 12px; }
+    .score-big { font-size: clamp(3rem, 9vw, 6rem); font-weight: 900; margin: 12px 0; }
+    .review { text-align: left; margin-top: 24px; display: grid; gap: 10px; max-height: 420px; overflow: auto; padding-right: 6px; }
+    .review-item { background: #f9fafb; border-radius: 14px; padding: 12px 14px; border-left: 8px solid #d1d5db; }
+    .review-item.ok { border-color: var(--green); }
+    .review-item.no { border-color: var(--red); }
+    .small { color: var(--muted); font-size: 0.95rem; }
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+      main { padding: 18px; }
+      header { padding: 18px; }
+      .answers { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .answer { min-height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🇫🇷 Quiz Français A1+</h1>
+      <div class="badge">25 Fragen · Kahoot-Stil</div>
+    </header>
+
+    <main>
+      <section id="start" class="screen active hero">
+        <h2>Bonjour ! Prêt·e ?</h2>
+        <p>Ein abwechslungsreiches Französisch-Quiz für A1+: Wortschatz, Grammatik, Lückentexte, Mini-Dialoge, Uhrzeit, Zahlen und Alltagssituationen.</p>
+        <button class="primary" onclick="startQuiz()">Quiz starten</button>
+      </section>
+
+      <section id="quiz" class="screen">
+        <div class="topbar">
+          <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+          <div id="qCounter" class="stat">Frage 1/25</div>
+          <div id="score" class="stat">Punkte: 0</div>
+        </div>
+        <div class="question-card">
+          <div id="type" class="type"></div>
+          <div id="question" class="question"></div>
+          <div id="hint" class="hint"></div>
+          <div id="answers" class="answers"></div>
+          <div id="feedback" class="feedback"></div>
+          <div class="next-row"><button id="nextBtn" class="primary" onclick="nextQuestion()" disabled>Weiter</button></div>
+        </div>
+      </section>
+
+      <section id="end" class="screen final">
+        <h2>Résultat final</h2>
+        <div id="finalScore" class="score-big"></div>
+        <p id="finalMessage"></p>
+        <button class="primary" onclick="restartQuiz()">Noch einmal spielen</button>
+        <button class="secondary" onclick="toggleReview()">Lösungen anzeigen</button>
+        <div id="review" class="review" style="display:none"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      {type:'Wortschatz', q:'Was bedeutet „la pomme“?', hint:'Lebensmittel', a:['der Apfel','die Birne','die Kartoffel','das Brot'], c:0, exp:'„La pomme“ heißt „der Apfel“.'},
+      {type:'Lückentext', q:'Je ____ allemand.', hint:'Ergänze das Verb „sein“: Ich bin Deutscher/Deutsche.', a:['suis','es','est','sommes'], c:0, exp:'„Je suis“ = ich bin.'},
+      {type:'Mini-Dialog', q:'A: Comment tu t’appelles ? B: ____', hint:'Welche Antwort passt?', a:['Je m’appelle Léa.','J’ai douze ans.','Ça va bien.','Je suis au collège.'], c:0, exp:'Auf die Frage nach dem Namen antwortet man: „Je m’appelle …“'},
+      {type:'Grammatik', q:'Welche Form ist richtig?', hint:'Artikel + Nomen: „chat“ ist maskulin.', a:['un chat','une chat','des chat','la chat'], c:0, exp:'„Chat“ ist maskulin: un chat.'},
+      {type:'Zahlen', q:'Welche Zahl ist „dix-sept“?', hint:'Zahlen 1–20', a:['16','17','18','70'], c:1, exp:'„Dix-sept“ = 17.'},
+      {type:'Lückentext', q:'Nous ____ à Berlin.', hint:'Verb „habiter“: Wir wohnen in Berlin.', a:['habite','habites','habitons','habitez'], c:2, exp:'Mit „nous“ heißt es „nous habitons“.'},
+      {type:'Alltag', q:'Was sagst du am Morgen?', hint:'Begrüßung', a:['Bonsoir !','Bonne nuit !','Bonjour !','Au revoir !'], c:2, exp:'Am Morgen sagt man „Bonjour !“'},
+      {type:'Plural', q:'Der Plural von „un livre“ ist …', hint:'ein Buch → Bücher', a:['une livres','des livres','les livre','un livres'], c:1, exp:'Plural unbestimmt: „des livres“.'},
+      {type:'Hör-/Leseverstehen', q:'„J’aime le chocolat.“ bedeutet …', hint:'Aimer = mögen/lieben', a:['Ich esse Schokolade.','Ich mag Schokolade.','Ich kaufe Schokolade.','Ich hasse Schokolade.'], c:1, exp:'„J’aime“ heißt „ich mag/liebe“.'},
+      {type:'Fragewort', q:'Welche Frage passt zur Antwort: „J’ai 13 ans.“?', hint:'Antwort: Alter', a:['Où habites-tu ?','Quel âge as-tu ?','Comment ça va ?','Qui est-ce ?'], c:1, exp:'Nach dem Alter fragt man: „Quel âge as-tu ?“'},
+      {type:'Lückentext', q:'Tu ____ un frère ?', hint:'Verb „avoir“: Hast du einen Bruder?', a:['ai','as','a','avons'], c:1, exp:'Mit „tu“ heißt es „tu as“.'},
+      {type:'Wortschatz', q:'Welches Wort passt nicht in die Reihe?', hint:'Drei Wörter sind Schulsachen.', a:['un stylo','un cahier','une règle','une banane'], c:3, exp:'„Une banane“ ist kein Schulmaterial.'},
+      {type:'Uhrzeit', q:'„Il est huit heures.“ bedeutet …', hint:'Uhrzeit', a:['Es ist 7 Uhr.','Es ist 8 Uhr.','Es ist 9 Uhr.','Es ist 18 Uhr.'], c:1, exp:'„Huit heures“ = 8 Uhr.'},
+      {type:'Grammatik', q:'Welche Verneinung ist korrekt?', hint:'Ich mag keinen Kaffee.', a:['Je ne pas aime le café.','Je n’aime pas le café.','Je aime ne pas café.','Je pas aime le café.'], c:1, exp:'Die Verneinung umklammert das Verb: „Je n’aime pas …“'},
+      {type:'Bild-Idee', q:'Du siehst 🐶. Wie heißt das auf Französisch?', hint:'Tier', a:['le chat','le chien','le poisson','l’oiseau'], c:1, exp:'Der Hund heißt „le chien“.'},
+      {type:'Lückentext', q:'Elle ____ les yeux bleus.', hint:'Sie hat blaue Augen.', a:['est','a','as','sont'], c:1, exp:'Französisch sagt: „Elle a les yeux bleus.“'},
+      {type:'Landeskunde', q:'Welche Stadt liegt in Frankreich?', hint:'Eine Hauptstadt ist dabei.', a:['Madrid','Paris','Rome','Berlin'], c:1, exp:'Paris ist die Hauptstadt Frankreichs.'},
+      {type:'Adjektive', q:'Welche Übersetzung ist richtig: „petit“?', hint:'Gegenteil von groß', a:['klein','alt','schön','neu'], c:0, exp:'„Petit“ bedeutet „klein“.'},
+      {type:'Mini-Dialog', q:'A: Ça va ? B: ____', hint:'Eine passende Antwort.', a:['Oui, ça va bien.','Je suis onze.','Il est midi.','C’est une trousse.'], c:0, exp:'Auf „Ça va ?“ kann man antworten: „Oui, ça va bien.“'},
+      {type:'Possessivbegleiter', q:'Ergänze: C’est ____ mère.', hint:'Meine Mutter', a:['mon','ma','mes','ton'], c:1, exp:'„Mère“ ist feminin: ma mère.'},
+      {type:'Monate', q:'Welcher Monat kommt nach „mars“?', hint:'Januar, Februar, März, …', a:['avril','mai','juin','février'], c:0, exp:'Nach März kommt April: „avril“.'},
+      {type:'Lückentext', q:'Je vais ____ cinéma.', hint:'Zum Kino gehen: aller à + le = au', a:['à le','au','aux','en'], c:1, exp:'„À + le“ wird zu „au“: Je vais au cinéma.'},
+      {type:'Essen & Trinken', q:'Was ist „de l’eau“?', hint:'Getränk', a:['Milch','Saft','Wasser','Tee'], c:2, exp:'„De l’eau“ heißt „Wasser“.'},
+      {type:'Satzbau', q:'Welche Satzstellung ist korrekt?', hint:'Ich spiele Fußball.', a:['Je joue au football.','Joue je au football.','Au football je joue.','Je au football joue.'], c:0, exp:'Grundwortstellung: Subjekt + Verb + Ergänzung.'},
+      {type:'Frage verstehen', q:'„Où est la gare ?“ fragt nach …', hint:'Où = wo', a:['dem Alter','dem Preis','dem Ort','der Uhrzeit'], c:2, exp:'„Où“ bedeutet „wo“. Die Frage heißt: Wo ist der Bahnhof?'}
+    ];
+
+    let current = 0;
+    let points = 0;
+    let answered = false;
+    let userAnswers = [];
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function startQuiz() {
+      current = 0; points = 0; answered = false; userAnswers = [];
+      showScreen('quiz');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const item = questions[current];
+      document.getElementById('qCounter').textContent = `Frage ${current + 1}/${questions.length}`;
+      document.getElementById('score').textContent = `Punkte: ${points}`;
+      document.getElementById('progress').style.width = `${(current / questions.length) * 100}%`;
+      document.getElementById('type').textContent = item.type;
+      document.getElementById('question').textContent = item.q;
+      document.getElementById('hint').textContent = item.hint || '';
+      document.getElementById('feedback').className = 'feedback';
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('nextBtn').disabled = true;
+
+      const symbols = ['▲', '◆', '●', '■'];
+      const answers = document.getElementById('answers');
+      answers.innerHTML = '';
+      item.a.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer';
+        btn.innerHTML = `<span class="symbol">${symbols[index]}</span><span>${answer}</span>`;
+        btn.onclick = () => chooseAnswer(index, btn);
+        answers.appendChild(btn);
+      });
+    }
+
+    function chooseAnswer(index) {
+      if (answered) return;
+      answered = true;
+      const item = questions[current];
+      const correct = index === item.c;
+      if (correct) points += 1000;
+      userAnswers.push(index);
+
+      const buttons = document.querySelectorAll('.answer');
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === item.c) btn.classList.add('correct');
+        else if (i === index) btn.classList.add('wrong');
+        else btn.classList.add('dim');
+      });
+
+      const fb = document.getElementById('feedback');
+      fb.className = `feedback ${correct ? 'good' : 'bad'}`;
+      fb.textContent = `${correct ? '✅ Richtig!' : '❌ Nicht ganz.'} ${item.exp}`;
+      document.getElementById('score').textContent = `Punkte: ${points}`;
+      document.getElementById('nextBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current < questions.length) renderQuestion();
+      else finishQuiz();
+    }
+
+    function finishQuiz() {
+      document.getElementById('progress').style.width = '100%';
+      showScreen('end');
+      const correctCount = userAnswers.filter((ans, i) => ans === questions[i].c).length;
+      document.getElementById('finalScore').textContent = `${correctCount}/${questions.length}`;
+      const percent = Math.round((correctCount / questions.length) * 100);
+      let msg = 'Bon effort ! Übe die schwierigen Fragen noch einmal.';
+      if (percent >= 85) msg = 'Excellent ! Très bien joué !';
+      else if (percent >= 65) msg = 'Bien joué ! Das ist schon sehr solide.';
+      else if (percent >= 45) msg = 'Pas mal ! Da geht noch mehr mit etwas Übung.';
+      document.getElementById('finalMessage').textContent = `${msg} Gesamtpunkte: ${points}`;
+      buildReview();
+    }
+
+    function buildReview() {
+      const review = document.getElementById('review');
+      review.innerHTML = '';
+      questions.forEach((item, i) => {
+        const ok = userAnswers[i] === item.c;
+        const div = document.createElement('div');
+        div.className = `review-item ${ok ? 'ok' : 'no'}`;
+        div.innerHTML = `<strong>${i + 1}. ${item.q}</strong><br>
+          <span class="small">Deine Antwort: ${userAnswers[i] !== undefined ? item.a[userAnswers[i]] : '—'}</span><br>
+          <span class="small">Richtig: ${item.a[item.c]}</span><br>
+          ${item.exp}`;
+        review.appendChild(div);
+      });
+    }
+
+    function toggleReview() {
+      const review = document.getElementById('review');
+      review.style.display = review.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function restartQuiz() { startQuiz(); document.getElementById('review').style.display = 'none'; }
+  </script>
+</body>
+</html>
