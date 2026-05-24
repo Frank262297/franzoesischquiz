@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Französisch Quiz – Niveau A2 (40 Fragen)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a3d6b;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px;
+  }
+
+  #app { width: 100%; max-width: 720px; }
+
+  #niveau-badge {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #00cfff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  #logo { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  #logo span { color: #00cfff; }
+
+  #score-box {
+    background: #fff;
+    color: #0a3d6b;
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  #progress-bg {
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    height: 10px;
+    margin-bottom: 6px;
+  }
+
+  #progress-fill {
+    background: #00cfff;
+    height: 10px;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  #q-label {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 10px;
+  }
+
+  #question-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 700;
+    color: #222;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  #answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .ans-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 16px 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    min-height: 64px;
+    transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  }
+
+  .ans-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
+  .ans-btn:active:not(:disabled) { transform: scale(0.97); }
+  .ans-btn:disabled { cursor: default; }
+
+  .ans-btn.red    { background: #e21b3c; }
+  .ans-btn.blue   { background: #1368ce; }
+  .ans-btn.yellow { background: #d89e00; }
+  .ans-btn.green  { background: #26890c; }
+
+  .ans-btn.correct { outline: 4px solid #fff; filter: brightness(1.1); }
+  .ans-btn.wrong   { filter: brightness(0.4); box-shadow: none; }
+
+  .sym { width: 26px; height: 26px; flex-shrink: 0; }
+
+  #feedback {
+    text-align: center;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    min-height: 32px;
+    padding: 4px 0;
+  }
+
+  #feedback .correct-msg { color: #80ffcc; font-weight: 700; }
+  #feedback .wrong-msg   { color: #ffaaaa; font-weight: 700; }
+
+  #next-btn {
+    display: none;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: #fff;
+    color: #0a3d6b;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  }
+
+  #next-btn:hover { background: #d0f0ff; }
+  #next-btn:active { transform: scale(0.98); }
+
+  #score-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: #fff;
+    gap: 12px;
+  }
+
+  #trophy { font-size: 72px; }
+  #final-title { font-size: 18px; color: rgba(255,255,255,0.7); font-weight: 600; }
+  #final-score { font-size: 64px; font-weight: 900; letter-spacing: -2px; }
+  #final-bar-bg { width: 100%; max-width: 340px; background: rgba(255,255,255,0.2); border-radius: 99px; height: 12px; margin: 6px 0; }
+  #final-bar { background: #00cfff; height: 12px; border-radius: 99px; transition: width 1s ease; }
+  #final-msg { font-size: 18px; font-weight: 700; margin-top: 8px; }
+  #final-sub { font-size: 14px; color: rgba(255,255,255,0.65); }
+
+  #restart-btn {
+    margin-top: 20px;
+    padding: 14px 40px;
+    border-radius: 10px;
+    border: none;
+    background: #00cfff;
+    color: #0a3d6b;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  #restart-btn:hover { background: #33daff; }
+  #restart-btn:active { transform: scale(0.98); }
+
+  @media (max-width: 480px) {
+    #question-card { font-size: 16px; padding: 16px 14px; }
+    .ans-btn { font-size: 13px; padding: 13px 9px; min-height: 56px; }
+    #logo { font-size: 17px; }
+    #final-score { font-size: 52px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="quiz-view">
+    <div id="niveau-badge">Niveau A2 · 40 Fragen</div>
+    <div id="header">
+      <div id="logo">Quiz <span>FR</span></div>
+      <div id="score-box">✓ <span id="pts">0</span> / 40</div>
+    </div>
+
+    <div id="progress-bg"><div id="progress-fill" style="width:2.5%"></div></div>
+    <div id="q-label">Frage <span id="cur-num">1</span> von 40</div>
+
+    <div id="question-card"></div>
+    <div id="answers"></div>
+    <div id="feedback"></div>
+    <button id="next-btn">Weiter →</button>
+  </div>
+
+  <div id="score-screen">
+    <div id="trophy">🏆</div>
+    <div id="final-title">Dein Ergebnis – Niveau A2</div>
+    <div id="final-score"></div>
+    <div id="final-bar-bg"><div id="final-bar" style="width:0%"></div></div>
+    <div id="final-msg"></div>
+    <div id="final-sub"></div>
+    <button id="restart-btn">🔄 Nochmal spielen</button>
+  </div>
+
+</div>
+
+<script>
+const SVG = {
+  triangle: `<svg class="sym" viewBox="0 0 24 24"><polygon points="12,3 22,21 2,21" fill="white"/></svg>`,
+  diamond:  `<svg class="sym" viewBox="0 0 24 24"><polygon points="12,2 22,12 12,22 2,12" fill="white"/></svg>`,
+  circle:   `<svg class="sym" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="white"/></svg>`,
+  square:   `<svg class="sym" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="white"/></svg>`
+};
+
+const SHAPES = [SVG.triangle, SVG.diamond, SVG.circle, SVG.square];
+const COLORS = ['red', 'blue', 'yellow', 'green'];
+
+const questions = [
+  // Grammatik – Zeiten
+  { q: "Complète : 'Hier, je ___ au cinéma.'", opts: ["vais", "suis allé", "irai", "allais"], ans: 1, exp: "Passé composé: je suis allé(e)" },
+  { q: "Was ist das Imparfait von 'être' (je) ?", opts: ["J'ai été", "Je suis", "J'étais", "Je serai"], ans: 2, exp: "Imparfait: j'étais = ich war" },
+  { q: "Complète : 'Nous ___ partir à huit heures.'", opts: ["devons", "voulons", "pouvons", "allons"], ans: 3, exp: "Aller + infinitif = Futur proche" },
+  { q: "Complète : 'Il ___ beau hier.'", opts: ["fait", "faisait", "fera", "ferait"], ans: 1, exp: "Imparfait für Wetterbeschreibung: il faisait beau" },
+  { q: "Was ist das Passé composé von 'partir' (elle) ?", opts: ["Elle a parti", "Elle est partie", "Elle partait", "Elle partira"], ans: 1, exp: "Partir → être: elle est partie" },
+  { q: "Complète : 'Demain, il ___ à Paris.'", opts: ["va", "allait", "est allé", "ira"], ans: 3, exp: "Futur simple: il ira" },
+  { q: "Welche Form ist korrekt im Passé composé?", opts: ["J'ai bu", "J'ai boire", "Je suis bu", "J'avais bu"], ans: 0, exp: "Boire → avoir: j'ai bu" },
+  { q: "Complète : 'Quand j'étais enfant, je ___ souvent.'", opts: ["joue", "ai joué", "jouais", "jouerai"], ans: 2, exp: "Gewohnheit in der Vergangenheit → Imparfait: jouais" },
+
+  // Grammatik – Verben & Struktur
+  { q: "Complète : 'Elle ___ très bien le français.'", opts: ["sait", "connaît", "parle", "dit"], ans: 2, exp: "Parler = sprechen" },
+  { q: "Complète : 'Je voudrais ___ café, s'il vous plaît.'", opts: ["de la", "du", "un", "des"], ans: 2, exp: "Un café = ein Kaffee" },
+  { q: "Welche Form ist korrekt?", opts: ["Je me lève", "Je me lever", "Je lève moi", "Je se lève"], ans: 0, exp: "Reflexiv: je me lève = ich stehe auf" },
+  { q: "Complète : '___ tu habites ?'", opts: ["Qui", "Quand", "Où", "Comment"], ans: 2, exp: "Où = Wo" },
+  { q: "Quel est le pluriel de 'un cheval' ?", opts: ["Des chevals", "Des chevaux", "Des chevales", "Des cheval"], ans: 1, exp: "Cheval → chevaux (unregelmäßig)" },
+  { q: "Complète : 'Ce film est ___ que l'autre.'", opts: ["plus bien", "meilleur", "plus meilleur", "bien"], ans: 1, exp: "Bon → meilleur (unregelmäßiger Komparativ)" },
+  { q: "Welches Pronomen ersetzt 'le livre' ?", opts: ["La", "Le", "Les", "Lui"], ans: 1, exp: "Le livre → le (maskulin, Akkusativ)" },
+  { q: "Complète : 'Je ___ à ma mère tous les jours.'", opts: ["dis", "parle", "réponds", "téléphone"], ans: 3, exp: "Téléphoner à = anrufen" },
+
+  // Wortschatz – Alltag
+  { q: "Was bedeutet 'avoir faim' ?", opts: ["Durst haben", "Hunger haben", "Müde sein", "Angst haben"], ans: 1, exp: "Avoir faim = Hunger haben" },
+  { q: "Was bedeutet 'faire les courses' ?", opts: ["Laufen gehen", "Einkaufen gehen", "Auto fahren", "Kochen"], ans: 1, exp: "Faire les courses = einkaufen gehen" },
+  { q: "Was bedeutet 'se lever' ?", opts: ["Sich hinlegen", "Aufstehen", "Sich waschen", "Sich anziehen"], ans: 1, exp: "Se lever = aufstehen" },
+  { q: "Que signifie 'depuis' ?", opts: ["Bis", "Seit", "Während", "Vor"], ans: 1, exp: "Depuis = seit" },
+  { q: "Que signifie 'quand même' ?", opts: ["Sowieso", "Trotzdem", "Deswegen", "Obwohl"], ans: 1, exp: "Quand même = trotzdem" },
+  { q: "Was bedeutet 'avoir soif' ?", opts: ["Hunger haben", "Müde sein", "Durst haben", "Kalt sein"], ans: 2, exp: "Avoir soif = Durst haben" },
+  { q: "Was bedeutet 'un rendez-vous' ?", opts: ["Ein Treffen / Termin", "Eine Reise", "Eine Prüfung", "Ein Geschenk"], ans: 0, exp: "Un rendez-vous = ein Termin / Treffen" },
+  { q: "Que signifie 'il y a' dans 'il y a deux ans' ?", opts: ["In", "Seit", "Vor", "Nach"], ans: 2, exp: "'Il y a deux ans' = vor zwei Jahren" },
+
+  // Wortschatz – Themen
+  { q: "Was ist 'un médecin' ?", opts: ["Ein Lehrer", "Ein Arzt", "Ein Koch", "Ein Anwalt"], ans: 1, exp: "Un médecin = ein Arzt" },
+  { q: "Was bedeutet 'la gare' ?", opts: ["Der Flughafen", "Der Bahnhof", "Die U-Bahn", "Der Bus"], ans: 1, exp: "La gare = der Bahnhof" },
+  { q: "Was ist 'un immeuble' ?", opts: ["Ein Haus", "Ein Hochhaus / Wohnblock", "Ein Zimmer", "Eine Straße"], ans: 1, exp: "Un immeuble = ein Wohnblock / Hochhaus" },
+  { q: "Que signifie 'avoir du mal à' ?", opts: ["Gut können", "Mühe haben mit", "Gern mögen", "Aufhören mit"], ans: 1, exp: "Avoir du mal à = Schwierigkeiten haben mit" },
+  { q: "Was bedeutet 'se sentir' ?", opts: ["Sich setzen", "Sich fühlen", "Sich erinnern", "Sich beeilen"], ans: 1, exp: "Se sentir = sich fühlen" },
+  { q: "Was ist 'une pharmacie' ?", opts: ["Ein Krankenhaus", "Eine Apotheke", "Ein Supermarkt", "Eine Schule"], ans: 1, exp: "Une pharmacie = eine Apotheke" },
+
+  // Kommunikation & Situationen
+  { q: "Wie fragt man nach dem Preis?", opts: ["C'est combien ?", "Où est-ce ?", "À quelle heure ?", "Avec qui ?"], ans: 0, exp: "C'est combien? = Wie viel kostet das?" },
+  { q: "Wie sagt man 'Ich habe Kopfschmerzen'?", opts: ["J'ai mal à la tête", "J'ai mal au dos", "J'ai mal aux pieds", "J'ai mal aux dents"], ans: 0, exp: "Mal à la tête = Kopfschmerzen" },
+  { q: "Wie reserviert man einen Tisch?", opts: ["Je voudrais une table", "Je veux manger", "Donnez-moi à manger", "C'est bon"], ans: 0, exp: "Je voudrais une table = Ich hätte gerne einen Tisch" },
+  { q: "Was sagt man, wenn man etwas nicht versteht?", opts: ["Je sais pas", "Je ne comprends pas", "C'est fini", "Ça va"], ans: 1, exp: "Je ne comprends pas = Ich verstehe nicht" },
+  { q: "Welche Uhrzeit ist 'quinze heures trente' ?", opts: ["13:30", "15:00", "15:30", "16:30"], ans: 2, exp: "Quinze heures trente = 15:30 Uhr" },
+
+  // Wetter & Beschreibungen
+  { q: "Was bedeutet 'il fait froid' ?", opts: ["Es ist heiß", "Es regnet", "Es ist kalt", "Es ist windig"], ans: 2, exp: "Il fait froid = Es ist kalt" },
+  { q: "Was ist das Gegenteil von 'grand' ?", opts: ["Gros", "Petit", "Vieux", "Beau"], ans: 1, exp: "Grand ≠ Petit" },
+  { q: "Was bedeutet 'il pleut' ?", opts: ["Es schneit", "Es ist bewölkt", "Es regnet", "Es ist sonnig"], ans: 2, exp: "Il pleut = Es regnet" },
+  { q: "Complète : 'Elle est ___ que son frère.' (intelligent)", opts: ["plus intelligent", "plus intelligente", "moins intelligente", "aussi intelligent"], ans: 1, exp: "Adjektiv muss im Femininum stehen: intelligente" },
+  { q: "Was bedeutet 'nuageux' ?", opts: ["Sonnig", "Regnerisch", "Bewölkt", "Windig"], ans: 2, exp: "Nuageux = bewölkt" }
+];
+
+const TOTAL = questions.length;
+let cur = 0, score = 0, answered = false;
+
+const qCard      = document.getElementById('question-card');
+const ansGrid    = document.getElementById('answers');
+const feedback   = document.getElementById('feedback');
+const nextBtn    = document.getElementById('next-btn');
+const ptsEl      = document.getElementById('pts');
+const curNumEl   = document.getElementById('cur-num');
+const progressEl = document.getElementById('progress-fill');
+const quizView   = document.getElementById('quiz-view');
+const scoreScr   = document.getElementById('score-screen');
+
+function load() {
+  answered = false;
+  feedback.innerHTML = '';
+  nextBtn.style.display = 'none';
+  const q = questions[cur];
+  curNumEl.textContent = cur + 1;
+  progressEl.style.width = ((cur + 1) / TOTAL * 100) + '%';
+  qCard.textContent = q.q;
+  ansGrid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn ' + COLORS[i];
+    btn.innerHTML = `<span class="sym">${SHAPES[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => pick(i, btn);
+    ansGrid.appendChild(btn);
+  });
+}
+
+function pick(idx, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[cur];
+  const btns = ansGrid.querySelectorAll('.ans-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.ans].classList.add('correct');
+  if (idx === q.ans) {
+    score++;
+    ptsEl.textContent = score;
+    feedback.innerHTML = `<span class="correct-msg">✓ Richtig!</span>  ${q.exp}`;
+  } else {
+    btn.classList.add('wrong');
+    feedback.innerHTML = `<span class="wrong-msg">✗ Falsch.</span>  ${q.exp}`;
+  }
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = cur < TOTAL - 1 ? 'Weiter →' : 'Ergebnis anzeigen 🏆';
+}
+
+nextBtn.onclick = () => {
+  cur++;
+  if (cur < TOTAL) { load(); }
+  else { showScore(); }
+};
+
+function showScore() {
+  quizView.style.display = 'none';
+  scoreScr.style.display = 'flex';
+  document.getElementById('final-score').textContent = score + ' / ' + TOTAL;
+  setTimeout(() => {
+    document.getElementById('final-bar').style.width = (score / TOTAL * 100) + '%';
+  }, 100);
+  const pct = score / TOTAL;
+  let msg, sub;
+  if (pct >= 0.9)      { msg = '🎉 Fantastisch! Bereit für B1!';        sub = 'Hervorragende Leistung – weiter so!' }
+  else if (pct >= 0.7) { msg = '👍 Très bien! Starke Leistung!';        sub = 'Noch ein bisschen üben, dann klappt B1!' }
+  else if (pct >= 0.5) { msg = '😊 Pas mal! Auf dem richtigen Weg!';    sub = 'Weiter üben – du schaffst das!' }
+  else                 { msg = '💪 Encore une fois!';                    sub = 'Nochmal versuchen – Übung macht den Meister!' }
+  document.getElementById('final-msg').textContent = msg;
+  document.getElementById('final-sub').textContent = sub;
+}
+
+document.getElementById('restart-btn').onclick = () => {
+  cur = 0; score = 0;
+  ptsEl.textContent = 0;
+  scoreScr.style.display = 'none';
+  quizView.style.display = 'block';
+  load();
+};
+
+load();
+</script>
+</body>
+</html>
